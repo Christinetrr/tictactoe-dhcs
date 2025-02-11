@@ -1,18 +1,5 @@
-# My cool website
+Paintchat
+Very simple server in server.js, which
 
-This file describes your project to the community. What's your cool website about? What makes it special?
-
-ヽ(๏∀๏ )ﾉ
-
-## ← index.html
-
-Where you'll write the content of your website. 
-
-## ← styles.css
-
-CSS files add styling rules to your content
-
-## ← script.js
-
-If you're feeling fancy you can add interactivity to your site with Javascript
-
+uses the "Express" framework to serve the contents of "public" (in this case, just index.html and style.css) as a static site, and
+uses the "Socket.io" library to establish a websocket connection between the server and clients.
