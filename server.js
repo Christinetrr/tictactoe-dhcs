@@ -1,8 +1,9 @@
 // This is the server code. Its job is to serve static web pages, 
-// and to receive and transmit websocket messages. It
-// 
-// You could
+// and to receive and transmit websocket messages. As it is currently configured:
+// when it gets any incoming message from one client, it broadcasts that message
+// back to everyone else.
 
+// --- code by Lea for Spring 2025 Designing Human Centered Software at CMU ---
 
 // We're using two libraries. 
 // "Express" makes it easy to serve web pages
@@ -27,14 +28,10 @@ const server = express()
 // Initiate a socket listener.
 const io = socketIO(server);
 
-// Whenever the socket gets a new message from a client, do the following...
+// Whenever the socket gets a new client connection, register the following event handlers...
 io.on("connection", function(socket) {
   //   if the message is "disconnect" (meaning the client has disconnected)
-	socket.on("disconnect", function() {
-    // nothing here for now, but you could imagine 
-    // emitting a message to tell others that someone disconnected...
-	});
-  
+
   
 	socket.on("message", function(msg) { 
       //  log it to the server logs
@@ -51,3 +48,8 @@ io.on("connection", function(socket) {
 		socket.broadcast.emit("paint", data); // "broadcast" flag means "emit to everyone *else*"
 	});
 });
+
+
+// Other kinds of events:
+// socket.on("disconnect", function() {}); // this client has disconnected
+  
