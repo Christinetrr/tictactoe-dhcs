@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>pixels</title>
+		<link rel="stylesheet" type="text/css" href="paint_style.css">
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+	<body>
+		<main id="main">
+			<canvas id="display"></canvas>
+		</main>
+		<footer>
+		  <input type="color" id="paintColor" name="paintColor" value="#11eaea" />
+		  <label for="paintColor">Paint color</label>
+		</footer>
+	</body>
+	<script type="text/javascript">
+		// Some configuration
+		const canvasSize = 150;
+		const pixelSize = 1;
+
+		// A boolean variable for whether the mouse is currently down, so we can do click'n'drag
+		let mousedown = false;
+
+		// A variable for drawing color
+		let color = "#000";
+
+		// And let the paintColor input change the value of the color variable
+		document.getElementById("paintColor").onchange = function (event) {
+			// Within a handler function for an HTML input event, the argument of the function (called "event" here) points to the input element as its "target".
+			// For inputs, we get the value that it is currently set to as "value". Hence event.target is the HTML input with the id "paintColor," and event.target.value is its current value. Because it's an <input type="color">, that value will be a valid html color value (as a string).
+			color = event.target.value;
+		}
+
+		// Get a handle on the "canvas" element
+		const canvas = document.getElementById("display");
+
+		// And set it to the size we want.
+		canvas.width = canvasSize*pixelSize;
+		canvas.height = canvasSize* pixelSize;
+
+		// Also get a handle on the canvas's "drawing context", which we'll need to actually draw to
+		const ctx = canvas.getContext("2d");
+
+		// We need to know where the canvas is on the page to get the relative location of clicks
+		let canvasPosition = canvas.getBoundingClientRect();
+
+		// and, diligently, we'll update it if the window gets resized
+		window.addEventListener('resize', function(event) {
+			canvasPosition = canvas.getBoundingClientRect()
+		}, true);
+
+		// function to draw a single pixel of color onto the canvas
+		function drawPixel(x, y, color) {
+			ctx.fillStyle = color;
+			ctx.fillRect(x*pixelSize, y*pixelSize, pixelSize, pixelSize);
+		}
+
+		// Make an instance of the io object for communicating with the server
+		const socket = io();
+
+		// Set up the handlers for events coming in on the socket
+		socket.on('connection', (socket) => {
+			// You could style the page slightly differently when the socket is connected.
+			main.classList.add("connected");
+			console.log('connected');
+		});
+
+		// Of course the main "event" we care about from the socket is new pixel data!
+		socket.on('paint', (data) => {
+			drawPixel(data.x, data.y, data.color);
+		});
+
+		// function that will figure out where the pixel should be, draw it here, and send it out to the socket
+		function makeNewPixel(event) {
+			// "event" will give a location on the whole page, so we need to account for the canvas's position to get the position within the canvas.
+			let x = event.clientX - canvasPosition.left;
+			let y = event.clientY - canvasPosition.top;
+
+			// draw it into this canvas
+			drawPixel(x, y, color);
+
+			// and tell the socket about it, too
+			socket.emit("paint", {x, y, color});
+		}
+
+
+		// If we click, it should add a pixel
+		canvas.onclick = function (event) {
+			makeNewPixel(event);
+		}
+
+		// If you're on the canvas and moving, if the mouse is down, that should also add a pixel
+		canvas.onmousemove = function(event) {
+			if (mousedown) {
+				makeNewPixel(event);
+			}
+		}
+
+		// And we should track mouse down/up anywhere on the page, really.
+		document.onmousedown = function(event) {
+			mousedown = true;
+		};
+		document.onmouseup = function(event) {
+			mousedown = false;
+		};
+
+	</script>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>simplest</title>
+		<style type="text/css">
+			body {
+				background: white;
+			}
+			body.clicked {
+				background: blue;
+			}
+		</style>
+		<link rel="stylesheet" type="text/css" href="simple_style.css">
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+	<body>
+
+	</body>
+	<script type="text/javascript">
+		// This script goes at the bottom of the page, so that we're sure the html has loaded.
+
+
+		// Make an instance of the io object for communicating with the server
+		const socket = io();
+
+		// When a new "click" message comes from the socket...
+		socket.on('clicked', (data) => {
+			// ...add the "clicked" class to the document body (which will change its color, because of CSS) 
+			document.body.classList.add("clicked");
+		});
+
+		// Similarly, when "unclicked"...
+		socket.on('unclicked', (data) => {
+			// ...remove that class
+			document.body.classList.remove("clicked");
+		});
+
+		// listen for mouse down/up and send the relevant message over the socket
+		document.onmousedown = function(event) {
+			socket.emit("clicked", {});
+		};
+		document.onmouseup = function(event) {
+			socket.emit("unclicked", {});
+		};
+		
+	</script>
+</html>

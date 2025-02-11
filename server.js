@@ -52,4 +52,9 @@ io.on("connection", function(socket) {
     // "broadcast" it: emit the "paint" message to everyone *except* who it came from
 		socket.broadcast.emit("paint", data); 
 	});
+
+	// handle *any* event
+	socket.onAny(function (eventName, args) {
+		socket.broadcast.emit(eventName, args); 
+	}) 
 });

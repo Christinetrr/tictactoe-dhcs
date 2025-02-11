@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>text</title>
+		<link rel="stylesheet" type="text/css" href="chat_style.css">
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+	<body>
+		<div id="transcript"></div>
+		<div id="controls">
+			<input type="text" label="message" name="message" id="message"/>
+			<button id="send">send</button>
+		</div>
+	</body>
+	<script type="text/javascript">
+		// This script goes at the bottom of the page, so that we're sure the html has loaded.
+
+		// Get the html elements
+		const sendButton = document.getElementById("send");
+		const transcript = document.getElementById("transcript");
+		const messageBox = document.getElementById("message");
+
+		// Make a function for adding a message to the "transcript."
+		// "Author" gets added as a class to the message div, for CSS styling.
+		function addToTranscript(contents, author) {
+			let newMessage = document.createElement("div");
+			newMessage.classList.add(author);
+			newMessage.innerText = contents;
+			transcript.appendChild(newMessage);
+		}
+
+		// Make an instance of the io object for communicating with the server
+		const socket = io();
+
+		// Set up the handlers for events coming in on the socket
+		socket.on('connection', (socket) => {
+			console.log('connected');
+		});
+
+		// When a new "chat" message comes from the socket
+		socket.on('chat', (data) => {
+			addToTranscript(data, "theirs");
+		});
+
+		// When the "send" button is clicked
+		sendButton.onclick = function () {
+			// get the current value of the text entry box
+			let message = messageBox.value;
+			console.log(message);
+			// send that over the socket as a message of type "chat"
+			socket.emit("chat", message);
+			// add this message to the transcript
+			addToTranscript(message, "mine");
+			// and clear the text entry box
+			messageBox.value = "";
+		}
+
+
+		
+	</script>
+</html>
