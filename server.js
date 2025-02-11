@@ -30,26 +30,26 @@ const io = socketIO(server);
 
 // Whenever the socket gets a new client connection, register the following event handlers...
 io.on("connection", function(socket) {
-  //   if the message is "disconnect" (meaning the client has disconnected)
-
   
-	socket.on("message", function(msg) { 
+  //   handle a "disconnect" event
+  socket.on("disconnect", function() {
+    //     nothing here for now
+  }); 
+  
+  //   handle a "note" event
+	socket.on("note", function(msg) { 
       //  log it to the server logs
 	    console.log(msg);
+    
       //  "emit" means to send back to the same client that sent this message we just got
       socket.emit("ok");
 	});
   
-  //   when you get a message of type "paint"...
+  //   handle a "paint" event
 	socket.on("paint", function(data){
     //  log it to the server logs
 		console.log(data);
-    // and "broadcast" it -- this means to emit the message to everyone *except* who the message came from
-		socket.broadcast.emit("paint", data); // "broadcast" flag means "emit to everyone *else*"
+    // "broadcast" it: emit the "paint" message to everyone *except* who it came from
+		socket.broadcast.emit("paint", data); 
 	});
 });
-
-
-// Other kinds of events:
-// socket.on("disconnect", function() {}); // this client has disconnected
-  

@@ -1,7 +1,8 @@
 {
-  "name": "paint",
+  "name": "HW4",
   "version": "0.1.0",
-  "description": "Collaborative pixel-painting.",
+  "description": "Framework for DHCS HW3",
+  "author": "Lea",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
