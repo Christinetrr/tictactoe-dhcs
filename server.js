@@ -11,6 +11,8 @@ const express = require("express");
 // ...and socket.io is a wrapper around Websockets, 
 // so we can exchange messages in real time with a client-side application
 const socketIO = require("socket.io");
+const app = express();
+const http = require('http').createServer(app);
 
 // Express needs to know what port to listen to. Because we're using Glitch, 
 // the specific port might be chosen for us (dynamically allocated); 
@@ -19,42 +21,96 @@ const socketIO = require("socket.io");
 // you run on your own computer), the "||" will mean it resolves to 3000 instead.
 const PORT = process.env.PORT || 3000;
 
-// Initiate an Express server. Tell it to serve the contents of the "public"
-// folder as static files, and listen on the port we set above.
-const server = express()
-	.use(express.static('public'))
-	.listen(PORT, () => console.log(`Listening on ${PORT}`));
+// Serve our web files from the 'public' folder
+app.use(express.static('public'));
+
+// Keep track of players waiting and current games
+let waitingPlayer = null;
+
+// Store games
+let games = new Map(); 
 
 // Initiate a socket listener.
-const io = socketIO(server);
+//const io = socketIO(http);
+const io = socketIO(http, {
+	pingTimeout: 60000,  // How long to wait for ping response
+	pingInterval: 25000  // How often to ping
+});
 
 // Whenever the socket gets a new client connection, register the following event handlers...
-io.on("connection", function(socket) {
-  
-  //   handle a "disconnect" event
-  socket.on("disconnect", function() {
-    //     nothing here for now
-  }); 
-  
-  //   handle a "note" event
-	socket.on("note", function(msg) { 
-      //  log it to the server logs
-	    console.log(msg);
-    
-      //  "emit" means to send back to the same client that sent this message we just got
-      socket.emit("ok");
-	});
-  
-  //   handle a "paint" event
-	socket.on("paint", function(data){
-    //  log it to the server logs
-		console.log(data);
-    // "broadcast" it: emit the "paint" message to everyone *except* who it came from
-		socket.broadcast.emit("paint", data); 
-	});
+io.on('connection', (socket) => {
+	if (!waitingPlayer) {
+		waitingPlayer = socket;
+		socket.emit('player-assigned', { start: true });
+	} 
+	else {
+		let game = {
+			board: ['', '', '', '', '', '', '', '', ''],
+			player1: waitingPlayer,
+			player2: socket
+		};
+		
+		socket.opponent = waitingPlayer;
+		waitingPlayer.opponent = socket;
+		
+		games.set(socket, game);
+		games.set(waitingPlayer, game);
+		
+		socket.emit('player-assigned', { start: false });
+		waitingPlayer = null;
+	}
 
-	// handle *any* event
-	socket.onAny(function (eventName, args) {
-		socket.broadcast.emit(eventName, args); 
-	}) 
+	//Player move
+	socket.on('move', ({ index }) => {
+		const game = games.get(socket);
+		if (!game) return;
+
+		// Mark the board with which player moved
+		if (game.player1 === socket) {
+			game.board[index] = 'player1';
+		} else {
+			game.board[index] = 'player2';
+		}
+		
+		socket.opponent.emit('opponent-move', { index });
+		checkWinner(game);
+	});
+	//When a player disconnects
+	socket.on('disconnect', () => {
+		if (waitingPlayer === socket) {
+			waitingPlayer = null;
+			return;
+		}
+		//tells player opponent left
+		if (socket.opponent) {
+			socket.opponent.emit('opponent-disconnected');
+			games.delete(socket.opponent);
+			games.delete(socket);
+		}
+	});
+});
+
+function checkWinner(game) {
+	const wins = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+	
+	for (let [a, b, c] of wins) {
+		if (game.board[a] && game.board[a] === game.board[b] && game.board[a] === game.board[c]) {
+			let lastPlayer = game.board[a];
+			
+			// Send the winner to both players
+			game.player1.emit('game-won', { winner: lastPlayer });
+			game.player2.emit('game-won', { winner: lastPlayer });
+			return;
+		}
+	}
+
+	if (!game.board.includes('')) {
+		game.player1.emit('game-draw');
+		game.player2.emit('game-draw');
+	}
+}
+
+// Start the server
+http.listen(PORT, () => {
+	console.log(`Game server started on port ${PORT}`);
 });

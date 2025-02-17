@@ -1,0 +1,67 @@
+* {
+	box-sizing: border-box;
+}
+
+html {
+	height: 100%;
+	width: 100%;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 0px;
+	margin: 0px;
+	width: 100%;
+	height: 100%;
+	background: #eee;
+}
+
+#game-status {
+	font-size: 24px;
+	margin-bottom: 20px;
+	color: #333;
+}
+
+#game-board {
+	display: grid;
+	grid-template-columns: 100px 100px 100px;
+	gap: 10px;
+	background: #777;
+	padding: 10px;
+	border-radius: 10px;
+}
+
+.cell {
+	width: 100px;
+	height: 100px;
+	background: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.cell:hover {
+	opacity: 0.8;
+}
+
+.cell.player1 {
+	background-color: #FF5722;  /* Red for first player */
+}
+
+.cell.player2 {
+	background-color: #2196F3;  /* Blue for second player */
+}
+
+#controls {
+	margin-top: 20px;
+	text-align: center;
+}
+
+#player-info {
+	margin-bottom: 20px;
+	font-size: 19px;
+}
