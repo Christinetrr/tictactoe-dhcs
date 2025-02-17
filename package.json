@@ -2,7 +2,7 @@
   "name": "tictactoe-game",
   "version": "1.0.0",
   "description": "Multiplayer Tic Tac Toe game",
-  "author": "Lea",
+  "author": "Christine Truong, cmtruong",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
