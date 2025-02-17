@@ -1,16 +1,16 @@
 {
-  "name": "hw4",
-  "version": "0.1.0",
-  "description": "Framework for DHCS HW3",
+  "name": "tictactoe-game",
+  "version": "1.0.0",
+  "description": "Multiplayer Tic Tac Toe game",
   "author": "Lea",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^4.17.1",
     "node": "18.0.0",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.0.0"
   },
   "keywords": [],
   "license": "ISC"

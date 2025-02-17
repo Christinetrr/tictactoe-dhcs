@@ -1,1 +1,20 @@
 {"appType":"node","buildDirectory":null}
+
+{
+  "install": "npm install",
+  "start": "node server.js",
+  "watch": {
+    "install": {
+      "include": [
+        "^package\\.json$"
+      ]
+    },
+    "restart": {
+      "include": [
+        "^\\.env$",
+        "^server\\.js$"
+      ]
+    },
+    "throttle": 1000
+  }
+}
