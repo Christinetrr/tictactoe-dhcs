@@ -1,1 +1,3 @@
-node_modules
+node_modules/     # Dependencies folder (will be huge)
+.DS_Store        # Mac system files
+.env             # Environment variables (if any)
