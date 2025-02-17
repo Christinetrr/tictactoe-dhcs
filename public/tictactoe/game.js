@@ -2,21 +2,26 @@
 const socket = io();
 
 let isMyTurn = false;
+let isPlayer1 = false;  // To track if we're player 1 or 2
+const RED = '#FF5722';
+const BLUE = '#2196F3';
+
 const gameBoard = document.getElementById('game-board');
 const gameStatus = document.getElementById('game-status');
 const playerInfo = document.getElementById('player-info');
 const resetButton = document.getElementById('reset-game');
 
-
 gameBoard.addEventListener('click', (event) => {
-    //check if click is valid and in the game board
     if (!event.target.dataset.index) return;
     if (!isMyTurn) return;
     if (event.target.style.backgroundColor) return;
     
-    // If we get here, it's a valid move, so set the color 
-    // red for first player
-    event.target.style.backgroundColor = '#FF5722';
+    // Player 1 is always red, Player 2 is always blue
+    if (isPlayer1) {
+        event.target.style.backgroundColor = RED;
+    } else {
+        event.target.style.backgroundColor = BLUE;
+    }
     socket.emit('move', { index: event.target.dataset.index });
     isMyTurn = false;
     updateGameStatus();
@@ -38,6 +43,7 @@ function updateGameStatus() {
 // assign players as 1 or 2
 socket.on('player-assigned', ({ start }) => {
     isMyTurn = start;
+    isPlayer1 = start;  // First player (start=true) is Player 1
     if (start) {
         playerInfo.textContent = 'You are Player 1 (Red)';
     } else {
@@ -49,26 +55,23 @@ socket.on('player-assigned', ({ start }) => {
 // When opponent moves
 socket.on('opponent-move', ({ index }) => {
     const cell = gameBoard.children[index];
-    //blue for opponent
-    cell.style.backgroundColor = '#2196F3';  
+    // If I'm Player 1, opponent is blue; if I'm Player 2, opponent is red
+    if (isPlayer1) {
+        cell.style.backgroundColor = BLUE;
+    } else {
+        cell.style.backgroundColor = RED;
+    }
     isMyTurn = true;
     updateGameStatus();
 });
 
-// winner
+// winner logic
 socket.on('game-won', ({ winner }) => {
-    if (winner === 'player1') {
-        if (isMyTurn) {
-            gameStatus.textContent = 'You won!';
-        } else {
-            gameStatus.textContent = 'Opponent won!';
-        }
+    if ((winner === 'player1' && playerInfo.textContent.includes('Red')) ||
+        (winner === 'player2' && playerInfo.textContent.includes('Blue'))) {
+        gameStatus.textContent = 'You won! ';
     } else {
-        if (isMyTurn) {
-            gameStatus.textContent = 'Opponent won!';
-        } else {
-            gameStatus.textContent = 'You won!';
-        }
+        gameStatus.textContent = 'Opponent won!';
     }
     isMyTurn = false;
 });
