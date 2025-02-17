@@ -31,11 +31,7 @@ let waitingPlayer = null;
 let games = new Map(); 
 
 // Initiate a socket listener.
-//const io = socketIO(http);
-const io = socketIO(http, {
-	pingTimeout: 60000,  // How long to wait for ping response
-	pingInterval: 25000  // How often to ping
-});
+const io = socketIO(http);
 
 // Whenever the socket gets a new client connection, register the following event handlers...
 io.on('connection', (socket) => {
